@@ -1,27 +1,37 @@
-const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const qrcode = require('qrcode-terminal');
+const { default: makeWASocket, useMultiFileAuthState, Delay } = require('@whiskeysockets/baileys');
 const express = require('express');
 const app = express();
 app.use(express.json());
 
 async function conectarWhatsApp() {
-    // Guarda la sesión en una carpeta para mantener la conexión activa
     const { state, saveCreds } = await useMultiFileAuthState('sesion_colectivo');
     
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true // Esto pintará el QR en la consola de Render
+        printQRInTerminal: false // Desactivamos el QR problemático
     });
+    
+    // Si no está conectado, le pedimos un código de vinculación de texto
+    if (!sock.authState.creds.registered) {
+        // CAMBIA ESTE NÚMERO: Pon el número de teléfono del colectivo con su código de país (Ej: 521919XXXXXX)
+        const numeroTelefono = "5219191286566"; 
+        
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(numeroTelefono);
+                console.log("=========================================");
+                console.log(`👉 TU CÓDIGO DE VINCULACIÓN ES: ${code}`);
+                console.log("=========================================");
+            } catch (err) {
+                console.log("Error al generar código:", err.message);
+            }
+        }, 5000);
+    }
     
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', (update) => {
-        const { connection, qr } = update;
-        if(qr) {
-            console.log("=========================================");
-            console.log("¡CÓDIGO QR GENERADO! Revisa los logs de Render para escanearlo.");
-            console.log("=========================================");
-        }
+        const { connection } = update;
         if(connection === 'close') {
             console.log('Conexión cerrada, intentando reconectar...');
             conectarWhatsApp();
@@ -30,7 +40,6 @@ async function conectarWhatsApp() {
         }
     });
     
-    // Ruta que recibirá el reporte desde tu PHP
     app.post('/enviar-alerta', async (req, res) => {
         const { telefono, mensaje } = req.body;
         try {
