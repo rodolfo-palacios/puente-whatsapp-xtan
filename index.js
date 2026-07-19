@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, Delay } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 const express = require('express');
 const app = express();
 app.use(express.json());
@@ -8,25 +8,26 @@ async function conectarWhatsApp() {
     
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: false // Desactivamos el QR problemático
+        printQRInTerminal: false
     });
     
-    // Si no está conectado, le pedimos un código de vinculación de texto
-    if (!sock.authState.creds.registered) {
-        // CAMBIA ESTE NÚMERO: Pon el número de teléfono del colectivo con su código de país (Ej: 521919XXXXXX)
-        const numeroTelefono = "5219191286566"; 
-        
-        setTimeout(async () => {
+    // Le damos 15 segundos completos para que la conexión a internet de Render se estabilice
+    setTimeout(async () => {
+        if (!sock.authState.creds.registered) {
+            // TU NÚMERO DE TELÉFONO DEL COLECTIVO (Asegúrate de que sea el correcto)
+            const numeroTelefono = "5219191286566"; 
+            
             try {
+                console.log("Solicitando código de vinculación a WhatsApp...");
                 const code = await sock.requestPairingCode(numeroTelefono);
                 console.log("=========================================");
                 console.log(`👉 TU CÓDIGO DE VINCULACIÓN ES: ${code}`);
                 console.log("=========================================");
             } catch (err) {
-                console.log("Error al generar código:", err.message);
+                console.log("Error al generar código, reintentando en breve:", err.message);
             }
-        }, 5000);
-    }
+        }
+    }, 15000); 
     
     sock.ev.on('creds.update', saveCreds);
 
@@ -34,7 +35,8 @@ async function conectarWhatsApp() {
         const { connection } = update;
         if(connection === 'close') {
             console.log('Conexión cerrada, intentando reconectar...');
-            conectarWhatsApp();
+            // Pequeña pausa antes de reconectar para evitar saturar el servidor
+            setTimeout(() => conectarWhatsApp(), 5000);
         } else if(connection === 'open') {
             console.log('¡WhatsApp conectado exitosamente para el Colectivo Xtan!');
         }
@@ -54,4 +56,5 @@ async function conectarWhatsApp() {
 
 conectarWhatsApp();
 const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Puente escuchando en puerto ${PORT}`));
 app.listen(PORT, () => console.log(`Puente escuchando en puerto ${PORT}`));
