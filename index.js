@@ -3,11 +3,11 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-// Tu token de BotFather ya ingresado de forma segura
+// Tu token de BotFather listo
 const TELEGRAM_TOKEN = '8801028896:AAEoMp8Hbw-qHElNbD7R1iN58QJZ0I4Ui0Q'; 
 
-// REEMPLAZA LO QUE ESTÁ ENTRE COMILLAS CON EL ENLACE QUE ELIGISTE EN EL PASO 1 (MANTÉN EL @)
-const CANAL_CHAT_ID = '@EL_ENLACE_QUE_ELEGISTE'; 
+// Tu canal de Telegram listo
+const CANAL_CHAT_ID = '@alertas_colectivo_xtan'; 
 
 app.post('/enviar-alerta', async (req, res) => {
     const { mensaje } = req.body;
