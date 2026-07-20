@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 
 // Tu token de BotFather listo
-const TELEGRAM_TOKEN = '8801028896:AAEoMp8Hbw-qHElNbD7R1iN58QJZ0I4Ui0Q'; 
+const TELEGRAM_TOKEN = '8801028896:AAEoMp8Hbw-qHElNbD7R1iN58QJZ0I4UiOQ'; 
 
 // Tu canal de Telegram listo
 const CANAL_CHAT_ID = '@alertas_colectivo_xtan'; 
