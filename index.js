@@ -7,7 +7,7 @@ app.use(express.json());
 const TELEGRAM_TOKEN = '8801028896:AAEoMp8Hbw-qHElNbD7R1iN58QJZ0I4UiOQ'; 
 
 // Tu canal de Telegram listo
-const CANAL_CHAT_ID = '@alertas_colectivo_xtan'; 
+const CANAL_CHAT_ID = '-1004328171774'; 
 
 app.post('/enviar-alerta', async (req, res) => {
     const { mensaje } = req.body;
